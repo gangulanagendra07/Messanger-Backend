@@ -34,12 +34,20 @@ mongoose.connect(dbConfig.url, {
 })
 
 require('./socket/streams')(io);
+require('./socket/private')(io);
 
 const auth = require('./routes/authRoutes');
 const posts = require('./routes/postRoutes')
+const users = require('./routes/userRoutes');
+const friends = require('./routes/friendsRoutes');
+const message = require('./routes/messageRoutes');
+
 
 app.use('/api/social', auth);
 app.use('/api/social', posts);
+app.use('/api/social', users);
+app.use('/api/social', friends);
+app.use('/api/social', message);
 
 server.listen(4500, () => {
     console.log("Social App listning on 4500 port.!")

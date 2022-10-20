@@ -84,6 +84,11 @@ exports.LoginUser = async (req, res, next) => {
     }
 
     const user = await User.findOne({ username: helpers.firstUpper(req.body.username) });
+    if (!user) {
+        return res.status(httpStatus.NOT_FOUND).json({
+            message: "Please Sign Up.!"
+        })
+    }
 
     return bcrypt.compare(req.body.password, user.password).then(data => {
         user.password = undefined;

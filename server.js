@@ -8,16 +8,24 @@ const dbConfig = require('./config/secret');
 const app = express();
 
 app.use(cors());
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header('Access-Control-Allow-Methods', 'GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'OPTIONS');
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
+// app.use((req, res, next) => {
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.header("Access-Control-Allow-Credentials", "true");
+//     res.header('Access-Control-Allow-Methods', 'GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'OPTIONS');
+//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//     next();
+// });
 
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+
+require('./socket/streams')(io);
+require('./socket/private')(io);
+const auth = require('./routes/authRoutes');
+const posts = require('./routes/postRoutes')
+const users = require('./routes/userRoutes');
+const friends = require('./routes/friendsRoutes');
+const message = require('./routes/messageRoutes');
 
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
@@ -32,15 +40,6 @@ mongoose.connect(dbConfig.url, {
 }).catch((err) => {
     console.log(err);
 })
-
-require('./socket/streams')(io);
-require('./socket/private')(io);
-
-const auth = require('./routes/authRoutes');
-const posts = require('./routes/postRoutes')
-const users = require('./routes/userRoutes');
-const friends = require('./routes/friendsRoutes');
-const message = require('./routes/messageRoutes');
 
 
 app.use('/api/social', auth);

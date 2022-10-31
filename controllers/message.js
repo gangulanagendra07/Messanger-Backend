@@ -2,6 +2,7 @@ const httpStatus = require('http-status-codes');
 const Message = require('../models/messageModels');
 const Conversation = require('../models/conversationModels');
 const User = require('../models/userModels');
+const Helper = require('../Helpers/helpers');
 
 
 exports.GetAllMessages = async (req, res, next) => {
@@ -54,7 +55,7 @@ exports.SendMessage = (req, res, next) => {
         async (err, result) => {
             if (result.length > 0) {
                 const msg = await Message.findOne({ conversationId: result[0]._id });
-                // Helper.updateChatList(req, msg);
+                Helper.updateCheckList(req, msg);
                 await Message.update(
                     {
                         conversationId: result[0]._id
@@ -143,4 +144,59 @@ exports.SendMessage = (req, res, next) => {
                 })
             }
         })
+}
+
+exports.MarkReceivedMessages = async (req, res, next) => {
+    const { sender, receiver } = req.params;
+    const msg = await Message.aggregate([
+        { $unwind: '$message' },
+        {
+
+            $match: {
+                $and: [
+                    { 'message.sendername': receiver, 'message.receivername': sender }
+                ]
+            }
+        }])
+    if (msg.length > 0) {
+        try {
+            msg.forEach(async (value) => {
+                await Message.update({
+                    'message._id': value.message._id
+                }, {
+                    $set: {
+                        'message.$.isRead': true
+                    }
+                });
+            });
+            res.status(httpStatus.OK).json({ message: "Messages marked as Read" })
+        } catch (err) {
+            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error Occured" })
+        }
+    }
+}
+
+exports.MarkAllMessages = async (req, res, next) => {
+    const msg = await Message.aggregate([
+        { $match: { 'message.receivername': req.user.username } },
+        { $unwind: '$message' },
+        { $match: { 'message.receivername': req.user.username } },
+
+    ])
+    if (msg.length > 0) {
+        try {
+            msg.forEach(async (value) => {
+                await Message.updateMany({
+                    'message._id': value.message._id
+                }, {
+                    $set: {
+                        'message.$.isRead': false
+                    }
+                });
+            });
+            res.status(httpStatus.OK).json({ message: " All Messages marked as Read" })
+        } catch (err) {
+            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Error Occured" })
+        }
+    }
 }

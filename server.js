@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const _ = require('lodash')
 const dbConfig = require('./config/secret');
 
 const app = express();
@@ -18,9 +19,11 @@ app.use(cors());
 
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+const { User } = require('./Helpers/UserClass');
 
-require('./socket/streams')(io);
+require('./socket/streams')(io, User, _);
 require('./socket/private')(io);
+
 const auth = require('./routes/authRoutes');
 const posts = require('./routes/postRoutes')
 const users = require('./routes/userRoutes');

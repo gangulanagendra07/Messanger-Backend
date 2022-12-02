@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const cluster = require('cluster');
 const httpStatus = require('http-status-codes');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -59,11 +60,13 @@ exports.CreateUser = async (req, res, next) => {
                 // };
                 // cookieOptions.secure = true;
                 res.cookie("jwt", token);
+                // cluster.worker.kill();
                 return res.status(httpStatus.CREATED).json({
                     message: "User data updated succesfully.!",
                     data: results,
                     token
                 })
+
             }).catch((err) => {
                 return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                     message: `Error occured.!`
@@ -71,6 +74,7 @@ exports.CreateUser = async (req, res, next) => {
             })
         })
     } catch (err) {
+        // cluster.worker.kill();
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             message: `${err}`
         })
@@ -107,7 +111,8 @@ exports.LoginUser = async (req, res, next) => {
         //     ),
         //     httpOnly: true
         // };
-        // cookieOptions.secure = true;
+        // cookieOptions.secure = true;        
+        // cluster.worker.kill();
         res.cookie('auth', token);
         return res.status(httpStatus.OK).json({
             message: " Login successfully",
@@ -116,6 +121,7 @@ exports.LoginUser = async (req, res, next) => {
         })
 
     }).catch((err) => {
+        // cluster.worker.kill();
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             message: "Error occured"
         })

@@ -1,4 +1,7 @@
 const express = require('express');
+//added clusters for child workers
+// const cluster = require('cluster');
+// const os = require('os');
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
@@ -29,6 +32,7 @@ const posts = require('./routes/postRoutes')
 const users = require('./routes/userRoutes');
 const friends = require('./routes/friendsRoutes');
 const message = require('./routes/messageRoutes');
+const images = require('./routes/imageRoutes');
 
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
@@ -50,9 +54,27 @@ app.use('/api/social', posts);
 app.use('/api/social', users);
 app.use('/api/social', friends);
 app.use('/api/social', message);
+app.use('/api/social', images);
+
+// Clusters implementation
+// const numCpus = os.cpus().length;
+
+// if (cluster.isMaster) {
+//     for (let i = 0; i < numCpus; i++) {
+//         cluster.fork();
+//     }
+//     cluster.on('exit', (worker, code, signal) => {
+//         console.log(`worker ${worker.process.pid} died`);
+//         cluster.fork();
+//     })
+// } else {
+//     server.listen(4500, () => {
+//         console.log(`${process.pid} Social App listning on 4500 port.!`)
+//     })
+// }
 
 server.listen(4500, () => {
-    console.log("Social App listning on 4500 port.!")
+    console.log(`${process.pid} Social App listning on 4500 port.!`)
 })
 // app.listen(4500, () => {
 //     console.log("Social App listning on 4500 port.!")
